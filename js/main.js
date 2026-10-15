@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const cv = $('board'), g = cv.getContext('2d');
   const INK = '#3b2a20', GOLD = '#f5b800', FELT = '#2f9e6b', FELT2 = '#2a9163', BLACK = '#2b2f3a', WHITE = '#ffffff';
-  let game = null, N = 6, mode = 'cpu', level = 'normal', sizeN = 6;
+  let game = null, N = 6, mode = 'cpu', level = 'normal', sizeN = 6, forceN = 0;   // forceN：ランダム対戦は 6×6 に固定
   let room = null, watch = false, myColor = 1, bot = 1, blackSlot = 0, queue = [], sentAt = -1, names = { 1: 'あなた', 2: 'CPU' }, leftNote = '';
   const LV = { easy: 'よわい', normal: 'ふつう', hard: 'つよい' };
   function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -62,7 +62,7 @@
     phase = 'idle'; anim = null; peek = false; hover = -1; cpuAt = performance.now() + 900;
     $('ov-result').classList.remove('show'); $('ov-online').classList.remove('show'); show('game'); layout(); hud();
   }
-  function leaveRoom() { if (room) { room.leave(); room = null; } watch = false; document.body.classList.remove('watching'); $('watchers').textContent = ''; }
+  function leaveRoom() { QM.ended(); if (room) { room.leave(); room = null; } watch = false; document.body.classList.remove('watching'); $('watchers').textContent = ''; }
   function toTitle() { leaveRoom(); game = null; mode = 'cpu'; $('ov-result').classList.remove('show'); show('title'); }
   document.querySelectorAll('.btn.lv').forEach(b => b.onclick = () => start('cpu', b.dataset.level));
   $('btn-two').onclick = () => start('two');
@@ -191,11 +191,11 @@
         onMove: m => { if (room === r && m) queue.push(m); },
         onResult: v => { // 相手がいなくなった
           if (room !== r || !game || game.over || mode !== 'online') return;
-          game.over = true; game.winner = colorOf(1 - v.loser); leftNote = 'あいてが退室しました';
+          game.over = true; game.winner = colorOf(1 - v.loser); leftNote = QM.isRandom() ? '相手が抜けたので、あなたの勝ち！' : 'あいてが退室しました';
           phase = 'over'; anim = null; hud(); result();
         }
       });
-      r.size = sizeN; room = r;
+      r.size = forceN || sizeN; forceN = 0; room = r;
       await r.join();
       watch = r.slot < 0; document.body.classList.toggle('watching', watch);
       $('wait-code').textContent = r.code;
@@ -207,8 +207,19 @@
     }
     $('btn-join').disabled = false; $('btn-join').textContent = 'はいる';
   }
+  // ---------- だれかと対戦（ランダム対戦） ----------
+  QM.setup({
+    game: 'panfa', ver: 'v1', name: '盤滑',
+    getDb, anchor: '#btn-online', anchorWhere: 'before', btnClass: 'btn online', nextClass: 'btn sub', nameKey: 'panfa-name',
+    join: (code, name) => { forceN = 6; $('in-code').value = code; $('in-name').value = name; joinOnline(); },
+    cpu: () => document.querySelector('.btn.lv[data-level="normal"]').click(), cpuLabel: 'CPU（ふつう）と遊びながら待つ',
+    quit: toTitle,
+    colors: { main: 'var(--red)', alt: 'var(--blue)', bg: '#fffaf0', fg: 'var(--ink)' },
+  });
+  QM.resultSlot('#ov-result .card', '#btn-title');
   let startTm = 0;
   function onlineStart(gm) {
+    QM.started({ code: room && room.code, watch: gm.slot < 0 });
     // 奇数回戦は先に入った人が黒（先手）、偶数回戦は交代
     blackSlot = gm.round % 2 === 1 ? 0 : 1;
     myColor = gm.slot >= 0 ? colorOf(gm.slot) : 1;
