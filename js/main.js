@@ -3,11 +3,11 @@
 // =============================================
 (function () {
   const $ = id => document.getElementById(id);
+  const T = I18N.t;
   const cv = $('board'), g = cv.getContext('2d');
   const INK = '#3b2a20', GOLD = '#f5b800', FELT = '#2f9e6b', FELT2 = '#2a9163', BLACK = '#2b2f3a', WHITE = '#ffffff';
   let game = null, N = 6, mode = 'cpu', level = 'normal', sizeN = 6, forceN = 0;   // forceN：ランダム対戦は 6×6 に固定
-  let room = null, watch = false, myColor = 1, bot = 1, blackSlot = 0, queue = [], sentAt = -1, names = { 1: 'あなた', 2: 'CPU' }, leftNote = '';
-  const LV = { easy: 'よわい', normal: 'ふつう', hard: 'つよい' };
+  let room = null, watch = false, myColor = 1, bot = 1, blackSlot = 0, queue = [], sentAt = -1, names = { 1: T('you'), 2: 'CPU' }, leftNote = '';
   function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   const colorOf = slot => (slot === blackSlot ? 1 : 2);
   let cs = 50, M = 40, dpr = 1;             // マスの大きさ、まわりの余白
@@ -55,7 +55,7 @@
     game = new SR.Game(N, o.seed != null ? mulberry(o.seed) : undefined);
     if (md !== 'online') { leaveRoom(); queue = []; }
     bot = md === 'online' && !watch ? myColor : 1;
-    names = o.names || (md === 'cpu' ? { 1: 'あなた', 2: 'CPU（' + LV[level] + '）' } : { 1: 'くろ', 2: 'しろ' });
+    names = o.names || (md === 'cpu' ? { 1: T('you'), 2: T('cpu_lv', { lv: T(level) }) } : { 1: T('black'), 2: T('white') });
     $('nameB').textContent = names[bot]; $('nameB').className = 'who p' + bot;
     $('nameT').textContent = names[3 - bot]; $('nameT').className = 'who p' + (3 - bot);
     sentAt = -1; leftNote = '';
@@ -69,7 +69,7 @@
   $('btn-again').onclick = () => {
     if (mode !== 'online') return start(mode, level);
     if (watch || !room) return;
-    room.rematch(); $('btn-again').disabled = true; $('again-msg').textContent = 'あいての「もう一回」を待っています…';
+    room.rematch(); $('btn-again').disabled = true; $('again-msg').textContent = T('wait_rematch');
   };
   $('btn-title').onclick = toTitle;
   $('btn-quit').onclick = toTitle;
@@ -85,9 +85,9 @@
     const c = SR.count(game.b); $('cntB').textContent = c[bot - 1]; $('cntT').textContent = c[2 - bot];
     $('nameB').classList.toggle('now', !game.over && game.turn === bot); $('nameT').classList.toggle('now', !game.over && game.turn !== bot);
     const st = $('status'), u = game.untilSlide();
-    if (game.over) { st.textContent = 'おしまい'; st.className = 'status'; return; }
-    const who = mode === 'cpu' ? (game.turn === 1 ? 'あなたの番' : 'CPUの番') : mode === 'online' ? (!watch && game.turn === myColor ? 'あなたの番' : names[game.turn] + 'の番') : (game.turn === 1 ? 'くろの番' : 'しろの番');
-    st.textContent = phase === 'slide' || phase === 'warn' ? 'すべる！' : u === 1 ? who + '／この1手のあと、すべる！' : who + '／あと' + u + '手ですべる';
+    if (game.over) { st.textContent = T('over'); st.className = 'status'; return; }
+    const who = mode === 'cpu' ? (game.turn === 1 ? T('your_turn') : T('cpu_turn')) : mode === 'online' ? (!watch && game.turn === myColor ? T('your_turn') : T('turn_of', { name: names[game.turn] })) : T('turn_of', { name: T(game.turn === 1 ? 'black' : 'white') });
+    st.textContent = phase === 'slide' || phase === 'warn' ? T('slide_now') : u === 1 ? T('slide_next', { who }) : T('slide_in', { who, n: u });
     st.className = 'status' + (u === 1 || phase === 'slide' || phase === 'warn' ? ' soon' : '');
   }
 
@@ -103,7 +103,7 @@
     e.preventDefault();
     if (!isHuman(game.turn)) return;
     const i = cellAt(e); if (i < 0) return;
-    if (!SR.flipsFor(game.b, N, i, game.turn)) { if (!game.b[i]) { snd.no(); toast('そこには置けません'); } return; }
+    if (!SR.flipsFor(game.b, N, i, game.turn)) { if (!game.b[i]) { snd.no(); toast(T('cant')); } return; }
     if (mode === 'online') { // 手は送って、もどってきたものを打つ（2人と観戦者で順番がずれないように）
       if (sentAt === game.moves) return;
       sentAt = game.moves; room.sendMove(i, game.moves); beep(440, 0.04, 'triangle', 0.04); return;
@@ -127,29 +127,29 @@
   function nextTurn() {
     const r = game.advance(); anim = null;
     if (r.over) { phase = 'over'; hud(); return setTimeout(result, 700); }
-    if (r.pass) { snd.pass(); toast((mode === 'cpu' ? (r.passed === 1 ? 'あなた' : 'CPU') : names[r.passed]) + 'は置けないのでパス', 1600); }
+    if (r.pass) { snd.pass(); toast(T('pass', { name: mode === 'cpu' ? (r.passed === 1 ? T('you') : 'CPU') : names[r.passed] }), 1600); }
     phase = 'idle'; cpuAt = performance.now() + (r.pass ? 1500 : 650); hud();
   }
   function result() {
     if (!game) return;
     const c = SR.count(game.b), w = game.winner, t = $('res-title');
     const mine = mode === 'cpu' ? 1 : mode === 'online' && !watch ? myColor : 0;   // 0＝どちらの味方でもない
-    if (mine) { t.textContent = w === mine ? 'かち！' : w === 0 ? 'ひきわけ' : 'まけ…'; t.className = w === mine ? 'win' : 'lose'; }
-    else { t.textContent = w === 0 ? 'ひきわけ' : names[w] + 'のかち！'; t.className = 'win'; }
+    if (mine) { t.textContent = w === mine ? T('res_win') : w === 0 ? T('res_draw') : T('res_lose'); t.className = w === mine ? 'win' : 'lose'; }
+    else { t.textContent = w === 0 ? T('res_draw') : T('res_x', { name: names[w] }); t.className = 'win'; }
     t.classList.toggle('small', t.textContent.length > 6);
     $('res-sub').textContent = `${names[bot]} ${c[bot - 1]} － ${c[2 - bot]} ${names[3 - bot]}` + (leftNote ? '\n' + leftNote : '');
     const ag = $('btn-again'); ag.disabled = false; ag.hidden = mode === 'online' && (watch || !!leftNote);
-    $('again-msg').textContent = mode === 'online' && watch ? '次の試合が始まるのを待っています…' : '';
+    $('again-msg').textContent = mode === 'online' && watch ? T('wait_next') : '';
     $('ov-result').classList.add('show'); (mine && w !== mine && w !== 0) ? snd.lose() : snd.win();
   }
 
   // ---------- あいことば対戦 ----------
   function loadScript(src) {
-    return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('通信できませんでした。電波のよいところでもう一度ためしてください')); document.head.appendChild(el); });
+    return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error(T('err_net'))); document.head.appendChild(el); });
   }
   async function getDb() {
     if (SR._db) return SR._db;
-    if (!SR.FIREBASE_CONFIG) throw new Error('オンライン対戦はまだ準備中です');
+    if (!SR.FIREBASE_CONFIG) throw new Error(T('err_notready'));
     const v = '10.12.2';
     await loadScript('https://www.gstatic.com/firebasejs/' + v + '/firebase-app-compat.js');
     await loadScript('https://www.gstatic.com/firebasejs/' + v + '/firebase-database-compat.js');
@@ -167,16 +167,16 @@
   $('btn-online-close').onclick = () => { leaveRoom(); $('ov-online').classList.remove('show'); };
   $('btn-copy').onclick = async () => {
     const url = location.origin + location.pathname + '?room=' + encodeURIComponent(room ? room.code : '');
-    try { await navigator.clipboard.writeText(url); $('btn-copy').textContent = 'コピーしました！'; } catch (e) { prompt('このリンクを送ってください', url); }
-    setTimeout(() => { $('btn-copy').textContent = 'さそうリンクをコピー'; }, 2000);
+    try { await navigator.clipboard.writeText(url); $('btn-copy').textContent = T('copied'); } catch (e) { prompt(T('send_link'), url); }
+    setTimeout(() => { $('btn-copy').textContent = T('copy_link'); }, 2000);
   };
   $('btn-join').onclick = joinOnline;
   $('in-code').addEventListener('keydown', e => { if (e.key === 'Enter') joinOnline(); });
   async function joinOnline() {
-    const code = SR.cleanCode($('in-code').value), name = $('in-name').value.trim().slice(0, 8) || 'ななし';
-    if (!code) { $('online-err').textContent = 'あいことばを入れてください（. # $ / [ ] は使えません）'; return; }
+    const code = SR.cleanCode($('in-code').value), name = $('in-name').value.trim().slice(0, 8) || T('noname');
+    if (!code) { $('online-err').textContent = T('err_code'); return; }
     try { localStorage.setItem('panfa-name', name); } catch (e) {}
-    $('online-err').textContent = ''; $('btn-join').disabled = true; $('btn-join').textContent = 'つないでいます…';
+    $('online-err').textContent = ''; $('btn-join').disabled = true; $('btn-join').textContent = T('connecting');
     try {
       const db = await getDb();
       leaveRoom();
@@ -184,14 +184,14 @@
         onPeople: p => {
           if (room !== r) return;
           $('watchers').textContent = p.watchers ? '👀' + p.watchers : '';
-          if (r.slot >= 0 && !p.names[1 - r.slot]) $('wait-msg').textContent = 'あいてを待っています…';
-          if (r.slot >= 0 && !p.names[1 - r.slot] && game && game.over && mode === 'online') { $('btn-again').hidden = true; $('again-msg').textContent = 'あいてが退室しました'; }
+          if (r.slot >= 0 && !p.names[1 - r.slot]) $('wait-msg').textContent = T('waiting');
+          if (r.slot >= 0 && !p.names[1 - r.slot] && game && game.over && mode === 'online') { $('btn-again').hidden = true; $('again-msg').textContent = T('left'); }
         },
         onStart: g => { if (room === r) onlineStart(g); },
         onMove: m => { if (room === r && m) queue.push(m); },
         onResult: v => { // 相手がいなくなった
           if (room !== r || !game || game.over || mode !== 'online') return;
-          game.over = true; game.winner = colorOf(1 - v.loser); leftNote = QM.isRandom() ? '相手が抜けたので、あなたの勝ち！' : 'あいてが退室しました';
+          game.over = true; game.winner = colorOf(1 - v.loser); leftNote = QM.isRandom() ? T('left_win') : T('left');
           phase = 'over'; anim = null; hud(); result();
         }
       });
@@ -199,20 +199,20 @@
       await r.join();
       watch = r.slot < 0; document.body.classList.toggle('watching', watch);
       $('wait-code').textContent = r.code;
-      $('wait-msg').textContent = watch ? '観戦で入りました。試合が始まるのを待っています…' : 'あいてを待っています…';
+      $('wait-msg').textContent = watch ? T('watch_in') : T('waiting');
       lobby(true);
     } catch (e) {
-      $('online-err').textContent = e.message || 'つながりませんでした';
+      $('online-err').textContent = e.message || T('err_conn');
       leaveRoom();
     }
-    $('btn-join').disabled = false; $('btn-join').textContent = 'はいる';
+    $('btn-join').disabled = false; $('btn-join').textContent = T('join');
   }
   // ---------- だれかと対戦（ランダム対戦） ----------
   QM.setup({
     game: 'panfa', ver: 'v1', name: '盤滑',
     getDb, anchor: '#btn-online', anchorWhere: 'before', btnClass: 'btn online', nextClass: 'btn sub', nameKey: 'panfa-name',
     join: (code, name) => { forceN = 6; $('in-code').value = code; $('in-name').value = name; joinOnline(); },
-    cpu: () => document.querySelector('.btn.lv[data-level="normal"]').click(), cpuLabel: 'CPU（ふつう）と遊びながら待つ',
+    cpu: () => document.querySelector('.btn.lv[data-level="normal"]').click(), cpuLabel: () => T('cpu_wait_label'),
     quit: toTitle,
     colors: { main: 'var(--red)', alt: 'var(--blue)', bg: '#fffaf0', fg: 'var(--ink)' },
   });
@@ -325,7 +325,7 @@
     }
     if (showPeek) {
       g.fillStyle = 'rgba(40,28,20,.9)'; const tw = cs * 3.4; rr(M + B / 2 - tw / 2, M + B + 2, tw, M - 6, (M - 6) / 2); g.fill();
-      g.fillStyle = '#fff'; g.font = `900 ${Math.round(cs * 0.3)}px "M PLUS Rounded 1c", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('すべったあと', M + B / 2, M + B + M / 2);
+      g.fillStyle = '#fff'; g.font = `900 ${Math.round(cs * 0.3)}px "M PLUS Rounded 1c", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(T('peek_label'), M + B / 2, M + B + M / 2);
     }
     // 矢印（押し出すがわの外に出す）
     if (!game.over && !sliding && !showPeek) {

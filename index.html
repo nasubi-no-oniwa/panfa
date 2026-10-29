@@ -20,31 +20,32 @@
 <body>
 <section id="title" class="screen active">
   <div class="title-box">
-    <p class="kana">パンファ</p>
-    <h1 class="logo" aria-label="盤滑（パンファ）">盤<span>滑</span></h1>
-    <p class="tagline">3手ごとに、1列がすべるリバーシ。</p>
+    <p class="kana" data-i="kana">パンファ</p>
+    <h1 class="logo" aria-label="盤滑（パンファ）" data-ia="doc_title">盤<span>滑</span></h1>
+    <p class="tagline" data-i="tagline">3手ごとに、1列がすべるリバーシ。</p>
     <div class="menu">
-      <p class="menu-label">盤の大きさ</p>
-      <div class="seg" id="seg-size"><button class="seg-btn on" data-n="6">6×6<small>3分くらい</small></button><button class="seg-btn" data-n="8">8×8<small>じっくり</small></button></div>
-      <p class="menu-label">CPUとたいせん</p>
+      <p class="menu-label" data-i="size">盤の大きさ</p>
+      <div class="seg" id="seg-size"><button class="seg-btn on" data-n="6" data-ih="size6">6×6<small>3分くらい</small></button><button class="seg-btn" data-n="8" data-ih="size8">8×8<small>じっくり</small></button></div>
+      <p class="menu-label" data-i="vs_cpu">CPUとたいせん</p>
       <div class="lv-row">
-        <button class="btn lv" data-level="easy">よわい</button>
-        <button class="btn lv" data-level="normal">ふつう</button>
-        <button class="btn lv" data-level="hard">つよい</button>
+        <button class="btn lv" data-level="easy" data-i="easy">よわい</button>
+        <button class="btn lv" data-level="normal" data-i="normal">ふつう</button>
+        <button class="btn lv" data-level="hard" data-i="hard">つよい</button>
       </div>
-      <button class="btn two" id="btn-two">この端末でふたり</button>
-      <button class="btn online" id="btn-online">あいことばで対戦</button>
-      <button class="btn sub" id="btn-howto">あそびかた</button>
+      <button class="btn two" id="btn-two" data-i="two">この端末でふたり</button>
+      <button class="btn online" id="btn-online" data-i="online">あいことばで対戦</button>
+      <button class="btn sub" id="btn-howto" data-i="howto">あそびかた</button>
     </div>
-    <a class="home-link" href="https://nasubi-no-oniwa.github.io/">🍆 なすびのお庭へ</a>
+    <a class="home-link" href="https://nasubi-no-oniwa.github.io/" data-i="home_e">🍆 なすびのお庭へ</a>
+    <div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ja">日本語</button><button type="button" data-lang="en">English</button><button type="button" data-lang="zh">繁中</button><button type="button" data-lang="ko">한국어</button></div>
   </div>
 </section>
 
 <section id="game" class="screen">
-  <div class="bar top"><span class="who p2" id="nameT">CPU</span><span class="cnt" id="cntT">2</span><span class="eyes" id="watchers"></span><span class="grow"></span><button class="mini" id="btn-quit">やめる</button></div>
+  <div class="bar top"><span class="who p2" id="nameT">CPU</span><span class="cnt" id="cntT">2</span><span class="eyes" id="watchers"></span><span class="grow"></span><button class="mini" id="btn-quit" data-i="quit">やめる</button></div>
   <div class="status" id="status"></div>
   <div class="board-wrap"><canvas id="board"></canvas></div>
-  <div class="bar bottom"><span class="who p1" id="nameB">あなた</span><span class="cnt" id="cntB">2</span><span class="grow"></span><button class="mini peek" id="btn-peek">すべったあとを見る</button></div>
+  <div class="bar bottom"><span class="who p1" id="nameB">あなた</span><span class="cnt" id="cntB">2</span><span class="grow"></span><button class="mini peek" id="btn-peek" data-i="peek">すべったあとを見る</button></div>
 </section>
 
 <div class="overlay" id="ov-result">
@@ -52,44 +53,45 @@
     <h2 id="res-title">かち！</h2>
     <p id="res-sub"></p>
     <p class="hint" id="again-msg"></p>
-    <button class="btn primary" id="btn-again">もう一回</button>
-    <button class="btn sub" id="btn-title">タイトルへ</button>
+    <button class="btn primary" id="btn-again" data-i="again">もう一回</button>
+    <button class="btn sub" id="btn-title" data-i="to_title">タイトルへ</button>
   </div>
 </div>
 <div class="overlay" id="ov-howto">
   <div class="card howto">
-    <h2>あそびかた</h2>
+    <h2 data-i="howto">あそびかた</h2>
     <ul>
-      <li>ふつうのリバーシです。相手のコマをはさむと、自分の色に裏返ります。さいごにコマが多い方の勝ち。</li>
-      <li><b>3手ごとに、1列がすべります。</b>矢印がついた列が、矢印の向きに1マスずれます。はしのコマは、反対がわのはしに回ります。</li>
-      <li>次にすべる列は、<b>いつも先に見えています</b>。矢印の数字が「あと何手ですべるか」です。</li>
-      <li>すべっても、コマは裏返りません。場所が変わるだけです。</li>
-      <li>角のとなりに置いたコマが、すべって角に入ることも。取られた角が、すべって消えることも。</li>
-      <li><b>「すべったあとを見る」</b>を押しているあいだ、すべったあとの盤が見えます。</li>
-      <li><b>あいことばで対戦</b>：同じあいことばを入れた人と対戦できます。黒（先手）は1試合ごとに交代。3人目からは観戦です。</li>
+      <li data-ih="h1">ふつうのリバーシです。相手のコマをはさむと、自分の色に裏返ります。さいごにコマが多い方の勝ち。</li>
+      <li data-ih="h2"><b>3手ごとに、1列がすべります。</b>矢印がついた列が、矢印の向きに1マスずれます。はしのコマは、反対がわのはしに回ります。</li>
+      <li data-ih="h3">次にすべる列は、<b>いつも先に見えています</b>。矢印の数字が「あと何手ですべるか」です。</li>
+      <li data-ih="h4">すべっても、コマは裏返りません。場所が変わるだけです。</li>
+      <li data-ih="h5">角のとなりに置いたコマが、すべって角に入ることも。取られた角が、すべって消えることも。</li>
+      <li data-ih="h6"><b>「すべったあとを見る」</b>を押しているあいだ、すべったあとの盤が見えます。</li>
+      <li data-ih="h7"><b>あいことばで対戦</b>：同じあいことばを入れた人と対戦できます。黒（先手）は1試合ごとに交代。3人目からは観戦です。</li>
     </ul>
-    <button class="btn primary" id="btn-howto-close">とじる</button>
+    <button class="btn primary" id="btn-howto-close" data-i="close">とじる</button>
   </div>
 </div>
 <div class="overlay" id="ov-online">
   <div class="card">
-    <h2 class="small">あいことばで対戦</h2>
+    <h2 class="small" data-i="online">あいことばで対戦</h2>
     <div id="online-form">
-      <label class="field-l">あいことば<input id="in-code" maxlength="20" autocomplete="off" placeholder="例：ぱんふぁ123"></label>
-      <label class="field-l">なまえ<input id="in-name" maxlength="8" autocomplete="off" placeholder="ななし"></label>
-      <p class="hint">同じあいことばを入れた人と対戦。3人目からは観戦になります。<br>盤の大きさは、先に入った人がタイトルでえらんだものになります。</p>
-      <button class="btn primary wide" id="btn-join">はいる</button>
+      <label class="field-l"><span data-i="passcode">あいことば</span><input id="in-code" maxlength="20" autocomplete="off" placeholder="例：ぱんふぁ123" data-ip="ex_code"></label>
+      <label class="field-l"><span data-i="name">なまえ</span><input id="in-name" maxlength="8" autocomplete="off" placeholder="ななし" data-ip="noname"></label>
+      <p class="hint" data-ih="online_hint2">同じあいことばを入れた人と対戦。3人目からは観戦になります。<br>盤の大きさは、先に入った人がタイトルでえらんだものになります。</p>
+      <button class="btn primary wide" id="btn-join" data-i="join">はいる</button>
     </div>
     <div id="online-wait" hidden>
-      <p class="wait-code">あいことば「<b id="wait-code"></b>」</p>
-      <p class="wait-msg" id="wait-msg">あいてを待っています…</p>
-      <button class="btn sub wide" id="btn-copy">さそうリンクをコピー</button>
+      <p class="wait-code"><span data-i="wait_pre">あいことば「</span><b id="wait-code"></b><span data-i="wait_post">」</span></p>
+      <p class="wait-msg" id="wait-msg" data-i="waiting">あいてを待っています…</p>
+      <button class="btn sub wide" id="btn-copy" data-i="copy_link">さそうリンクをコピー</button>
     </div>
     <p class="err" id="online-err"></p>
-    <button class="btn sub wide" id="btn-online-close">もどる</button>
+    <button class="btn sub wide" id="btn-online-close" data-i="back">もどる</button>
   </div>
 </div>
 <div id="toast" class="toast"></div>
+<script src="js/i18n.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/cpu.js"></script>
 <script src="js/online.js"></script>

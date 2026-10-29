@@ -67,3 +67,8 @@ body.watching #btn-peek { visibility: hidden; }
 .card h2.small { font-size: 26px; }
 #title { justify-content: flex-start; } .title-box { margin: auto 0; }
 @media (max-height: 620px) { .logo { font-size: clamp(56px, 20vw, 84px); } .tagline { margin: 6px 0 10px; } .menu { gap: 8px; padding: 12px; } .btn { padding: 9px 8px; } .home-link { margin-top: 10px; } }
+
+/* ことばの切りかえ */
+.langs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px}
+.langs button{font:800 13px 'M PLUS Rounded 1c',sans-serif;background:transparent;color:#3b2a20;border:2px solid rgba(59,42,32,.45);border-radius:999px;padding:4px 12px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:#3b2a20;color:#fff;border-color:#3b2a20}
